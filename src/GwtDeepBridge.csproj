@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- GWT Deepchart Bridge: tray app that bakes GWT's live levels into GwtLive.dll and reloads it on open Deepchart charts.
+       Build: dotnet publish -c Release (self-contained folder in bin\publish). The GEX feed is in Shared\. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <UseWPF>true</UseWPF>                       <!-- UIAutomationClient -->
+    <AssemblyName>GwtDeepchartBridge</AssemblyName>
+    <RootNamespace>Gwt</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>12</LangVersion>
+    <Optimize>true</Optimize>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+    <NoWarn>$(NoWarn);CA1416</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    
+    <Compile Remove="Template\**" />
+    <EmbeddedResource Include="Template\GwtLive.cs" LogicalName="GwtLive.Template.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.13.0" />
+  </ItemGroup>
+
+  <!-- .NET reference assemblies for compiling GwtLive.dll on the member's PC (no SDK needed there). -->
+  <Target Name="CopyRefPack" AfterTargets="Build;Publish">
+    <ItemGroup>
+      <RefDll Include="$(NetCoreTargetingPackRoot)\Microsoft.NETCore.App.Ref\$(BundledNETCoreAppPackageVersion)\ref\net10.0\*.dll" />
+    </ItemGroup>
+    <Error Condition="'@(RefDll)' == ''" Text="Microsoft.NETCore.App.Ref $(BundledNETCoreAppPackageVersion) not found under $(NetCoreTargetingPackRoot)." />
+    <Copy SourceFiles="@(RefDll)" DestinationFolder="$(OutDir)ref" SkipUnchangedFiles="true" />
+    <Copy Condition="'$(PublishDir)' != ''" SourceFiles="@(RefDll)" DestinationFolder="$(PublishDir)ref" SkipUnchangedFiles="true" />
+  </Target>
+
+</Project>
+
